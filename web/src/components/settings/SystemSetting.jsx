@@ -58,11 +58,14 @@ const SystemSetting = () => {
     'oidc.token_endpoint': '',
     'oidc.user_info_endpoint': '',
     Notice: '',
+    EmailProvider: 'smtp',
     SMTPServer: '',
     SMTPPort: '',
     SMTPAccount: '',
     SMTPFrom: '',
     SMTPToken: '',
+    ResendAPIKey: '',
+    ResendFrom: '',
     WorkerUrl: '',
     WorkerValidKey: '',
     WorkerAllowHttpImageRequestEnabled: '',
@@ -233,9 +236,15 @@ const SystemSetting = () => {
     await updateOptions([{ key: 'ServerAddress', value: ServerAddress }]);
   };
 
-  const submitSMTP = async () => {
+  const submitEmail = async () => {
     const options = [];
 
+    // Email Provider
+    if (originInputs['EmailProvider'] !== inputs.EmailProvider) {
+      options.push({ key: 'EmailProvider', value: inputs.EmailProvider });
+    }
+
+    // SMTP Settings
     if (originInputs['SMTPServer'] !== inputs.SMTPServer) {
       options.push({ key: 'SMTPServer', value: inputs.SMTPServer });
     }
@@ -256,6 +265,17 @@ const SystemSetting = () => {
       inputs.SMTPToken !== ''
     ) {
       options.push({ key: 'SMTPToken', value: inputs.SMTPToken });
+    }
+
+    // Resend Settings
+    if (
+      originInputs['ResendAPIKey'] !== inputs.ResendAPIKey &&
+      inputs.ResendAPIKey !== ''
+    ) {
+      options.push({ key: 'ResendAPIKey', value: inputs.ResendAPIKey });
+    }
+    if (originInputs['ResendFrom'] !== inputs.ResendFrom) {
+      options.push({ key: 'ResendFrom', value: inputs.ResendFrom });
     }
 
     if (options.length > 0) {
@@ -756,55 +776,126 @@ const SystemSetting = () => {
                 </Form.Section>
               </Card>
               <Card>
-                <Form.Section text={t('配置 SMTP')}>
+                <Form.Section text={t('配置邮件服务')}>
                   <Text>{t('用以支持系统的邮件发送')}</Text>
-                  <Row
-                    gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}
+                  <Form.Select
+                    field='EmailProvider'
+                    label={t('邮件服务提供商')}
+                    style={{ width: '100%', marginBottom: 16 }}
                   >
-                    <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-                      <Form.Input
-                        field='SMTPServer'
-                        label={t('SMTP 服务器地址')}
-                      />
-                    </Col>
-                    <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-                      <Form.Input field='SMTPPort' label={t('SMTP 端口')} />
-                    </Col>
-                    <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-                      <Form.Input field='SMTPAccount' label={t('SMTP 账户')} />
-                    </Col>
-                  </Row>
-                  <Row
-                    gutter={{ xs: 8, sm: 16, md: 24, lg: 24, xl: 24, xxl: 24 }}
-                    style={{ marginTop: 16 }}
-                  >
-                    <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-                      <Form.Input
-                        field='SMTPFrom'
-                        label={t('SMTP 发送者邮箱')}
-                      />
-                    </Col>
-                    <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-                      <Form.Input
-                        field='SMTPToken'
-                        label={t('SMTP 访问凭证')}
-                        type='password'
-                        placeholder='敏感信息不会发送到前端显示'
-                      />
-                    </Col>
-                    <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-                      <Form.Checkbox
-                        field='SMTPSSLEnabled'
-                        noLabel
-                        onChange={(e) =>
-                          handleCheckboxChange('SMTPSSLEnabled', e)
-                        }
+                    <Form.Select.Option value='smtp'>
+                      {t('SMTP')}
+                    </Form.Select.Option>
+                    <Form.Select.Option value='resend'>
+                      {t('Resend')}
+                    </Form.Select.Option>
+                  </Form.Select>
+                  {inputs.EmailProvider === 'smtp' && (
+                    <>
+                      <Row
+                        gutter={{
+                          xs: 8,
+                          sm: 16,
+                          md: 24,
+                          lg: 24,
+                          xl: 24,
+                          xxl: 24,
+                        }}
                       >
-                        {t('启用SMTP SSL')}
-                      </Form.Checkbox>
-                    </Col>
-                  </Row>
-                  <Button onClick={submitSMTP}>{t('保存 SMTP 设置')}</Button>
+                        <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                          <Form.Input
+                            field='SMTPServer'
+                            label={t('SMTP 服务器地址')}
+                          />
+                        </Col>
+                        <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                          <Form.Input field='SMTPPort' label={t('SMTP 端口')} />
+                        </Col>
+                        <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                          <Form.Input
+                            field='SMTPAccount'
+                            label={t('SMTP 账户')}
+                          />
+                        </Col>
+                      </Row>
+                      <Row
+                        gutter={{
+                          xs: 8,
+                          sm: 16,
+                          md: 24,
+                          lg: 24,
+                          xl: 24,
+                          xxl: 24,
+                        }}
+                        style={{ marginTop: 16 }}
+                      >
+                        <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                          <Form.Input
+                            field='SMTPFrom'
+                            label={t('SMTP 发送者邮箱')}
+                          />
+                        </Col>
+                        <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                          <Form.Input
+                            field='SMTPToken'
+                            label={t('SMTP 访问凭证')}
+                            type='password'
+                            placeholder='敏感信息不会发送到前端显示'
+                          />
+                        </Col>
+                        <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                          <Form.Checkbox
+                            field='SMTPSSLEnabled'
+                            noLabel
+                            onChange={(e) =>
+                              handleCheckboxChange('SMTPSSLEnabled', e)
+                            }
+                          >
+                            {t('启用SMTP SSL')}
+                          </Form.Checkbox>
+                        </Col>
+                      </Row>
+                    </>
+                  )}
+
+                  {inputs.EmailProvider === 'resend' && (
+                    <>
+                      <Row
+                        gutter={{
+                          xs: 8,
+                          sm: 16,
+                          md: 24,
+                          lg: 24,
+                          xl: 24,
+                          xxl: 24,
+                        }}
+                      >
+                        <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                          <Form.Input
+                            field='ResendAPIKey'
+                            label={t('Resend API Key')}
+                            type='password'
+                            placeholder='re_xxxxxxxxx'
+                            helpText={t('从 Resend 控制台获取 API Key')}
+                          />
+                        </Col>
+                        <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+                          <Form.Input
+                            field='ResendFrom'
+                            label={t('发送者邮箱')}
+                            placeholder='noreply@yourdomain.com'
+                            helpText={t('必须是已验证的域名')}
+                          />
+                        </Col>
+                      </Row>
+                    </>
+                  )}
+
+                  <Button onClick={submitEmail} style={{ marginTop: 16 }}>
+                    {inputs.EmailProvider === 'smtp'
+                      ? t('保存 SMTP 设置')
+                      : t('保存 Resend 设置')}
+                  </Button>
                 </Form.Section>
               </Card>
               <Card>

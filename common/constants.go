@@ -72,12 +72,26 @@ var MemoryCacheEnabled bool
 
 var LogConsumeEnabled = true
 
+// Email Provider Constants
+const (
+	EmailProviderSMTP   = "smtp"
+	EmailProviderResend = "resend"
+)
+
+// Email Configuration
+var EmailProvider = EmailProviderSMTP // Default to SMTP for backward compatibility
+
+// SMTP Configuration
 var SMTPServer = ""
 var SMTPPort = 587
 var SMTPSSLEnabled = false
 var SMTPAccount = ""
 var SMTPFrom = ""
 var SMTPToken = ""
+
+// Resend Configuration
+var ResendAPIKey = ""
+var ResendFrom = ""
 
 var GitHubClientId = ""
 var GitHubClientSecret = ""

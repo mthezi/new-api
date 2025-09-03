@@ -20,6 +20,18 @@ func generateMessageID() (string, error) {
 }
 
 func SendEmail(subject string, receiver string, content string) error {
+	// Route to appropriate email provider
+	switch EmailProvider {
+	case EmailProviderResend:
+		return SendEmailWithResend(subject, receiver, content)
+	case EmailProviderSMTP:
+		return sendEmailWithSMTP(subject, receiver, content)
+	default:
+		return sendEmailWithSMTP(subject, receiver, content) // Default to SMTP for backward compatibility
+	}
+}
+
+func sendEmailWithSMTP(subject string, receiver string, content string) error {
 	if SMTPFrom == "" { // for compatibility
 		SMTPFrom = SMTPAccount
 	}
