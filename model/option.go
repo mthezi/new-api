@@ -24,8 +24,8 @@ func AllOption() ([]*Option, error) {
 }
 
 func InitOptionMap() {
-	common.OptionMapRWMutex.Lock()
-	common.OptionMap = make(map[string]string)
+    common.OptionMapRWMutex.Lock()
+    common.OptionMap = make(map[string]string)
 
 	// 添加原有的系统配置
 	common.OptionMap["FileUploadPermission"] = strconv.Itoa(common.FileUploadPermission)
@@ -67,7 +67,10 @@ func InitOptionMap() {
 	common.OptionMap["HomePageContent"] = ""
 	common.OptionMap["Footer"] = common.Footer
 	common.OptionMap["SystemName"] = common.SystemName
-	common.OptionMap["Logo"] = common.Logo
+    common.OptionMap["Logo"] = common.Logo
+    // Currency display configuration
+    common.OptionMap["CurrencyCode"] = common.CurrencyCode
+    common.OptionMap["CurrencySymbol"] = common.CurrencySymbol
 	common.OptionMap["ServerAddress"] = ""
 	common.OptionMap["WorkerUrl"] = setting.WorkerUrl
 	common.OptionMap["WorkerValidKey"] = setting.WorkerValidKey
@@ -183,9 +186,9 @@ func UpdateOption(key string, value string) error {
 }
 
 func updateOptionMap(key string, value string) (err error) {
-	common.OptionMapRWMutex.Lock()
-	defer common.OptionMapRWMutex.Unlock()
-	common.OptionMap[key] = value
+    common.OptionMapRWMutex.Lock()
+    defer common.OptionMapRWMutex.Unlock()
+    common.OptionMap[key] = value
 
 	// 检查是否是模型配置 - 使用更规范的方式处理
 	if handleConfigUpdate(key, value) {
@@ -206,9 +209,9 @@ func updateOptionMap(key string, value string) (err error) {
 			common.ImageDownloadPermission = intValue
 		}
 	}
-	if strings.HasSuffix(key, "Enabled") || key == "DefaultCollapseSidebar" || key == "DefaultUseAutoGroup" {
-		boolValue := value == "true"
-		switch key {
+    if strings.HasSuffix(key, "Enabled") || key == "DefaultCollapseSidebar" || key == "DefaultUseAutoGroup" {
+        boolValue := value == "true"
+        switch key {
 		case "PasswordRegisterEnabled":
 			common.PasswordRegisterEnabled = boolValue
 		case "PasswordLoginEnabled":
@@ -235,10 +238,10 @@ func updateOptionMap(key string, value string) (err error) {
 			common.AutomaticDisableChannelEnabled = boolValue
 		case "AutomaticEnableChannelEnabled":
 			common.AutomaticEnableChannelEnabled = boolValue
-		case "LogConsumeEnabled":
-			common.LogConsumeEnabled = boolValue
-		case "DisplayInCurrencyEnabled":
-			common.DisplayInCurrencyEnabled = boolValue
+        case "LogConsumeEnabled":
+            common.LogConsumeEnabled = boolValue
+        case "DisplayInCurrencyEnabled":
+            common.DisplayInCurrencyEnabled = boolValue
 		case "DisplayTokenStatEnabled":
 			common.DisplayTokenStatEnabled = boolValue
 		case "DrawingEnabled":
@@ -279,9 +282,16 @@ func updateOptionMap(key string, value string) (err error) {
 			setting.DefaultUseAutoGroup = boolValue
 		case "ExposeRatioEnabled":
 			ratio_setting.SetExposeRatioEnabled(boolValue)
-		}
-	}
-	switch key {
+        }
+    }
+    // currency display settings
+    switch key {
+    case "CurrencyCode":
+        common.CurrencyCode = value
+    case "CurrencySymbol":
+        common.CurrencySymbol = value
+    }
+    switch key {
 	case "EmailDomainWhitelist":
 		common.EmailDomainWhitelist = strings.Split(value, ",")
 	case "EmailProvider":
@@ -319,10 +329,10 @@ func updateOptionMap(key string, value string) (err error) {
 		setting.EpayId = value
 	case "EpayKey":
 		setting.EpayKey = value
-	case "Price":
-		setting.Price, _ = strconv.ParseFloat(value, 64)
-	case "USDExchangeRate":
-		setting.USDExchangeRate, _ = strconv.ParseFloat(value, 64)
+    case "Price":
+        setting.Price, _ = strconv.ParseFloat(value, 64)
+    case "USDExchangeRate":
+        setting.USDExchangeRate, _ = strconv.ParseFloat(value, 64)
 	case "MinTopUp":
 		setting.MinTopUp, _ = strconv.Atoi(value)
 	case "StripeApiSecret":

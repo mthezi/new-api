@@ -204,15 +204,15 @@ export default function SettingsPaymentGateway(props) {
               <Form.InputNumber
                 field='Price'
                 precision={2}
-                label={t('充值价格（x元/美金）')}
-                placeholder={t('例如：7，就是7元/美金')}
+                label={t('每单位充值价格')}
+                placeholder={t('例如：7，表示每单位充值金额为 7')}
               />
             </Col>
             <Col xs={24} sm={24} md={8} lg={8} xl={8}>
               <Form.InputNumber
                 field='MinTopUp'
-                label={t('最低充值美元数量')}
-                placeholder={t('例如：2，就是最低充值2$')}
+                label={t('最低充值数量')}
+                placeholder={t('例如：2，表示最低可充值 2 单位')}
               />
             </Col>
           </Row>

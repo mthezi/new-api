@@ -35,6 +35,7 @@ import { SiAlipay, SiWechat, SiStripe } from 'react-icons/si';
 import { CreditCard, Coins, Wallet, BarChart2, TrendingUp } from 'lucide-react';
 import { IconGift } from '@douyinfe/semi-icons';
 import { useMinimumLoadingTime } from '../../hooks/common/useMinimumLoadingTime';
+import { getCurrencySymbol } from '../../helpers';
 
 const { Text } = Typography;
 
@@ -335,7 +336,8 @@ const RechargeCard = ({
                               {formatLargeNumber(preset.value)}
                             </span>
                             <span className='text-xs text-gray-500'>
-                              ￥{(preset.value * priceRatio).toFixed(2)}
+                              {getCurrencySymbol()}
+                              {(preset.value * priceRatio).toFixed(2)}
                             </span>
                           </div>
                         </Button>

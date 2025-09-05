@@ -68,12 +68,12 @@ func (*StripeAdaptor) RequestPay(c *gin.Context, req *StripePayRequest) {
 
 	id := c.GetInt("id")
 	user, _ := model.GetUserById(id, false)
-	chargedMoney := GetChargedAmount(float64(req.Amount), *user)
+    chargedMoney := getStripePayMoney(float64(req.Amount), user.Group)
 
 	reference := fmt.Sprintf("new-api-ref-%d-%d-%s", user.Id, time.Now().UnixMilli(), randstr.String(4))
 	referenceId := "ref_" + common.Sha1([]byte(reference))
 
-	payLink, err := genStripeLink(referenceId, user.StripeCustomer, user.Email, req.Amount)
+    payLink, err := genStripeLink(referenceId, user.StripeCustomer, user.Email, req.Amount)
 	if err != nil {
 		log.Println("获取Stripe Checkout支付链接失败", err)
 		c.JSON(200, gin.H{"message": "error", "data": "拉起支付失败"})
@@ -254,22 +254,17 @@ func GetChargedAmount(count float64, user model.User) float64 {
 }
 
 func getStripePayMoney(amount float64, group string) float64 {
-	if !common.DisplayInCurrencyEnabled {
-		amount = amount / common.QuotaPerUnit
-	}
-	// Using float64 for monetary calculations is acceptable here due to the small amounts involved
-	topupGroupRatio := common.GetTopupGroupRatio(group)
-	if topupGroupRatio == 0 {
-		topupGroupRatio = 1
-	}
-	payMoney := amount * setting.StripeUnitPrice * topupGroupRatio
-	return payMoney
+    // Using float64 for monetary calculations is acceptable here due to the small amounts involved
+    topupGroupRatio := common.GetTopupGroupRatio(group)
+    if topupGroupRatio == 0 {
+        topupGroupRatio = 1
+    }
+    methodRatio := setting.GetPayMethodRatio(PaymentMethodStripe)
+    payMoney := amount * setting.StripeUnitPrice * topupGroupRatio * methodRatio
+    return payMoney
 }
 
 func getStripeMinTopup() int64 {
-	minTopup := setting.StripeMinTopUp
-	if !common.DisplayInCurrencyEnabled {
-		minTopup = minTopup * int(common.QuotaPerUnit)
-	}
-	return int64(minTopup)
+    minTopup := setting.StripeMinTopUp
+    return int64(minTopup)
 }

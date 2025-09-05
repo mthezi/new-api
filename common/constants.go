@@ -16,9 +16,14 @@ var Footer = ""
 var Logo = ""
 var TopUpLink = ""
 
+// Currency configuration for display
+// By default, pricing uses USD as base. You can customize display code/symbol.
+var CurrencyCode = "USD"
+var CurrencySymbol = "$"
+
 // var ChatLink = ""
 // var ChatLink2 = ""
-var QuotaPerUnit = 500 * 1000.0 // $0.002 / 1K tokens
+var QuotaPerUnit = 500 * 1000.0 // priced at $0.002 / 1K tokens
 var DisplayInCurrencyEnabled = true
 var DisplayTokenStatEnabled = true
 var DrawingEnabled = true

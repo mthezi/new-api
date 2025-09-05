@@ -20,14 +20,15 @@ import (
 )
 
 type EpayRequest struct {
-	Amount        int64  `json:"amount"`
-	PaymentMethod string `json:"payment_method"`
-	TopUpCode     string `json:"top_up_code"`
+    Amount        int64  `json:"amount"`
+    PaymentMethod string `json:"payment_method"`
+    TopUpCode     string `json:"top_up_code"`
 }
 
 type AmountRequest struct {
-	Amount    int64  `json:"amount"`
-	TopUpCode string `json:"top_up_code"`
+    Amount        int64  `json:"amount"`
+    PaymentMethod string `json:"payment_method"`
+    TopUpCode     string `json:"top_up_code"`
 }
 
 func GetEpayClient() *epay.Client {
@@ -44,35 +45,25 @@ func GetEpayClient() *epay.Client {
 	return withUrl
 }
 
-func getPayMoney(amount int64, group string) float64 {
-	dAmount := decimal.NewFromInt(amount)
+func getPayMoney(amount int64, group string, method string) float64 {
+    dAmount := decimal.NewFromInt(amount)
 
-	if !common.DisplayInCurrencyEnabled {
-		dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
-		dAmount = dAmount.Div(dQuotaPerUnit)
-	}
+    topupGroupRatio := common.GetTopupGroupRatio(group)
+    if topupGroupRatio == 0 {
+        topupGroupRatio = 1
+    }
 
-	topupGroupRatio := common.GetTopupGroupRatio(group)
-	if topupGroupRatio == 0 {
-		topupGroupRatio = 1
-	}
+    dTopupGroupRatio := decimal.NewFromFloat(topupGroupRatio)
+    dPrice := decimal.NewFromFloat(setting.Price)
+    dMethodRatio := decimal.NewFromFloat(setting.GetPayMethodRatio(method))
 
-	dTopupGroupRatio := decimal.NewFromFloat(topupGroupRatio)
-	dPrice := decimal.NewFromFloat(setting.Price)
+    payMoney := dAmount.Mul(dPrice).Mul(dTopupGroupRatio).Mul(dMethodRatio)
 
-	payMoney := dAmount.Mul(dPrice).Mul(dTopupGroupRatio)
-
-	return payMoney.InexactFloat64()
+    return payMoney.InexactFloat64()
 }
 
 func getMinTopup() int64 {
-	minTopup := setting.MinTopUp
-	if !common.DisplayInCurrencyEnabled {
-		dMinTopup := decimal.NewFromInt(int64(minTopup))
-		dQuotaPerUnit := decimal.NewFromFloat(common.QuotaPerUnit)
-		minTopup = int(dMinTopup.Mul(dQuotaPerUnit).IntPart())
-	}
-	return int64(minTopup)
+    return int64(setting.MinTopUp)
 }
 
 func RequestEpay(c *gin.Context) {
@@ -93,7 +84,7 @@ func RequestEpay(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "error", "data": "获取用户分组失败"})
 		return
 	}
-	payMoney := getPayMoney(req.Amount, group)
+    payMoney := getPayMoney(req.Amount, group, req.PaymentMethod)
 	if payMoney < 0.01 {
 		c.JSON(200, gin.H{"message": "error", "data": "充值金额过低"})
 		return
@@ -114,15 +105,15 @@ func RequestEpay(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "error", "data": "当前管理员未配置支付信息"})
 		return
 	}
-	uri, params, err := client.Purchase(&epay.PurchaseArgs{
-		Type:           req.PaymentMethod,
-		ServiceTradeNo: tradeNo,
-		Name:           fmt.Sprintf("TUC%d", req.Amount),
-		Money:          strconv.FormatFloat(payMoney, 'f', 2, 64),
-		Device:         epay.PC,
-		NotifyUrl:      notifyUrl,
-		ReturnUrl:      returnUrl,
-	})
+    uri, params, err := client.Purchase(&epay.PurchaseArgs{
+        Type:           req.PaymentMethod,
+        ServiceTradeNo: tradeNo,
+        Name:           fmt.Sprintf("TUC%d", req.Amount),
+        Money:          strconv.FormatFloat(payMoney, 'f', 2, 64),
+        Device:         epay.PC,
+        NotifyUrl:      notifyUrl,
+        ReturnUrl:      returnUrl,
+    })
 	if err != nil {
 		c.JSON(200, gin.H{"message": "error", "data": "拉起支付失败"})
 		return
@@ -240,27 +231,27 @@ func EpayNotify(c *gin.Context) {
 }
 
 func RequestAmount(c *gin.Context) {
-	var req AmountRequest
-	err := c.ShouldBindJSON(&req)
-	if err != nil {
-		c.JSON(200, gin.H{"message": "error", "data": "参数错误"})
-		return
-	}
+    var req AmountRequest
+    err := c.ShouldBindJSON(&req)
+    if err != nil {
+        c.JSON(200, gin.H{"message": "error", "data": "参数错误"})
+        return
+    }
 
-	if req.Amount < getMinTopup() {
-		c.JSON(200, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", getMinTopup())})
-		return
-	}
-	id := c.GetInt("id")
-	group, err := model.GetUserGroup(id, true)
-	if err != nil {
-		c.JSON(200, gin.H{"message": "error", "data": "获取用户分组失败"})
-		return
-	}
-	payMoney := getPayMoney(req.Amount, group)
-	if payMoney <= 0.01 {
-		c.JSON(200, gin.H{"message": "error", "data": "充值金额过低"})
-		return
-	}
-	c.JSON(200, gin.H{"message": "success", "data": strconv.FormatFloat(payMoney, 'f', 2, 64)})
+    if req.Amount < getMinTopup() {
+        c.JSON(200, gin.H{"message": "error", "data": fmt.Sprintf("充值数量不能小于 %d", getMinTopup())})
+        return
+    }
+    id := c.GetInt("id")
+    group, err := model.GetUserGroup(id, true)
+    if err != nil {
+        c.JSON(200, gin.H{"message": "error", "data": "获取用户分组失败"})
+        return
+    }
+    payMoney := getPayMoney(req.Amount, group, req.PaymentMethod)
+    if payMoney <= 0.01 {
+        c.JSON(200, gin.H{"message": "error", "data": "充值金额过低"})
+        return
+    }
+    c.JSON(200, gin.H{"message": "success", "data": strconv.FormatFloat(payMoney, 'f', 2, 64)})
 }

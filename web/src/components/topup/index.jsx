@@ -363,7 +363,9 @@ const TopUp = () => {
   }, [statusState?.status]);
 
   const renderAmount = () => {
-    return amount + ' ' + t('元');
+    const symbol = statusState?.status?.currency_symbol || '$';
+    const val = Number.isFinite(amount) ? Number(amount).toFixed(2) : amount;
+    return `${symbol}${val}`;
   };
 
   const getAmount = async (value) => {
@@ -374,6 +376,7 @@ const TopUp = () => {
     try {
       const res = await API.post('/api/user/amount', {
         amount: parseFloat(value),
+        payment_method: payWay || '',
       });
       if (res !== undefined) {
         const { message, data } = res.data;

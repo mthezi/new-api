@@ -100,16 +100,7 @@ const SearchActions = memo(
             </div>
 
             {/* 货币单位选择 */}
-            {showWithRecharge && (
-              <Select
-                value={currency}
-                onChange={setCurrency}
-                optionList={[
-                  { value: 'USD', label: 'USD' },
-                  { value: 'CNY', label: 'CNY' },
-                ]}
-              />
-            )}
+            {/* 单一货币模式：移除货币选择器 */}
 
             {/* 显示倍率开关 */}
             <div className='flex items-center gap-2'>

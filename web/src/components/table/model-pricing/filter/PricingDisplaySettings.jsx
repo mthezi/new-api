@@ -53,10 +53,6 @@ const PricingDisplaySettings = ({
     },
   ];
 
-  const currencyItems = [
-    { value: 'USD', label: 'USD ($)' },
-    { value: 'CNY', label: 'CNY (¥)' },
-  ];
 
   const handleChange = (value) => {
     switch (value) {
@@ -97,17 +93,7 @@ const PricingDisplaySettings = ({
         t={t}
       />
 
-      {showWithRecharge && (
-        <SelectableButtonGroup
-          title={t('货币单位')}
-          items={currencyItems}
-          activeValue={currency}
-          onChange={setCurrency}
-          collapsible={false}
-          loading={loading}
-          t={t}
-        />
-      )}
+      {/* 单一货币模式下，移除货币选择项 */}
     </div>
   );
 };

@@ -38,6 +38,8 @@ export default function GeneralSettings(props) {
     QuotaPerUnit: '',
     RetryTimes: '',
     USDExchangeRate: '',
+    CurrencyCode: '',
+    CurrencySymbol: '',
     DisplayInCurrencyEnabled: false,
     DisplayTokenStatEnabled: false,
     DefaultCollapseSidebar: false,
@@ -133,12 +135,32 @@ export default function GeneralSettings(props) {
               <Col xs={24} sm={12} md={8} lg={8} xl={8}>
                 <Form.Input
                   field={'QuotaPerUnit'}
-                  label={t('单位美元额度')}
+                  label={t('单位货币额度')}
                   initValue={''}
                   placeholder={t('一单位货币能兑换的额度')}
                   onChange={handleFieldChange('QuotaPerUnit')}
                   showClear
                   onClick={() => setShowQuotaWarning(true)}
+                />
+              </Col>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                <Form.Input
+                  field={'CurrencyCode'}
+                  label={t('显示货币代码（如 CNY、EUR）')}
+                  initValue={''}
+                  placeholder={t('用于前端展示和日志显示的货币代码')}
+                  onChange={handleFieldChange('CurrencyCode')}
+                  showClear
+                />
+              </Col>
+              <Col xs={24} sm={12} md={8} lg={8} xl={8}>
+                <Form.Input
+                  field={'CurrencySymbol'}
+                  label={t('显示货币符号（如 ¥、€）')}
+                  initValue={''}
+                  placeholder={t('用于前端展示和日志显示的货币符号')}
+                  onChange={handleFieldChange('CurrencySymbol')}
+                  showClear
                 />
               </Col>
               <Col xs={24} sm={12} md={8} lg={8} xl={8}>

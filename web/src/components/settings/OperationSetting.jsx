@@ -41,6 +41,8 @@ const OperationSetting = () => {
     'general_setting.docs_link': '',
     QuotaPerUnit: 0,
     USDExchangeRate: 0,
+    CurrencyCode: '',
+    CurrencySymbol: '',
     RetryTimes: 0,
     DisplayInCurrencyEnabled: false,
     DisplayTokenStatEnabled: false,

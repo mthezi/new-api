@@ -1,16 +1,17 @@
 package logger
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"io"
-	"log"
-	"one-api/common"
-	"os"
-	"path/filepath"
-	"sync"
-	"time"
+    "context"
+    "encoding/json"
+    "fmt"
+    "io"
+    "log"
+    "one-api/common"
+    "one-api/setting"
+    "os"
+    "path/filepath"
+    "sync"
+    "time"
 
 	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/gin-gonic/gin"
@@ -92,19 +93,25 @@ func logHelper(ctx context.Context, level string, msg string) {
 }
 
 func LogQuota(quota int) string {
-	if common.DisplayInCurrencyEnabled {
-		return fmt.Sprintf("＄%.6f 额度", float64(quota)/common.QuotaPerUnit)
-	} else {
-		return fmt.Sprintf("%d 点额度", quota)
-	}
+    if common.DisplayInCurrencyEnabled {
+        amount := float64(quota) / common.QuotaPerUnit // denominated in pricing base (USD by default)
+        if common.CurrencyCode != "USD" {
+            amount *= setting.USDExchangeRate
+        }
+        return fmt.Sprintf("%s%.6f 额度", common.CurrencySymbol, amount)
+    }
+    return fmt.Sprintf("%d 点额度", quota)
 }
 
 func FormatQuota(quota int) string {
-	if common.DisplayInCurrencyEnabled {
-		return fmt.Sprintf("＄%.6f", float64(quota)/common.QuotaPerUnit)
-	} else {
-		return fmt.Sprintf("%d", quota)
-	}
+    if common.DisplayInCurrencyEnabled {
+        amount := float64(quota) / common.QuotaPerUnit
+        if common.CurrencyCode != "USD" {
+            amount *= setting.USDExchangeRate
+        }
+        return fmt.Sprintf("%s%.6f", common.CurrencySymbol, amount)
+    }
+    return fmt.Sprintf("%d", quota)
 }
 
 // LogJson 仅供测试使用 only for test

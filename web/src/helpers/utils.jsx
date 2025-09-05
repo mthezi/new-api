@@ -636,6 +636,7 @@ export const calculateModelPrice = ({
 
     const rawDisplayInput = displayPrice(inputRatioPriceUSD);
     const rawDisplayCompletion = displayPrice(completionRatioPriceUSD);
+    const symbol = displayPrice(0).replace(/[0-9.\s-]/g, '');
 
     const numInput =
       parseFloat(rawDisplayInput.replace(/[^0-9.]/g, '')) / unitDivisor;
@@ -643,8 +644,8 @@ export const calculateModelPrice = ({
       parseFloat(rawDisplayCompletion.replace(/[^0-9.]/g, '')) / unitDivisor;
 
     return {
-      inputPrice: `${currency === 'CNY' ? '¥' : '$'}${numInput.toFixed(precision)}`,
-      completionPrice: `${currency === 'CNY' ? '¥' : '$'}${numCompletion.toFixed(precision)}`,
+      inputPrice: `${symbol}${numInput.toFixed(precision)}`,
+      completionPrice: `${symbol}${numCompletion.toFixed(precision)}`,
       unitLabel,
       isPerToken: true,
       usedGroup,
